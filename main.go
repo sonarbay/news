@@ -17,7 +17,7 @@ import (
 
 const (
 	base    = "https://sonarbay.com"
-	version = "0.1.0"
+	version = "0.1.1"
 	repo    = "sonarbay/news"
 )
 
