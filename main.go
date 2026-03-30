@@ -137,6 +137,7 @@ Commands:
 
 Flags:
   --json            Output raw JSON (works with all commands)
+  --version         Show version
   -h, --help        Show this help
 
 Search Flags:
@@ -145,6 +146,8 @@ Search Flags:
   -s <sort>         Sort: relevance, newest, oldest (default: relevance)
   --country <code>  Filter by country code
   --source <name>   Filter by source domain
+  --from <time>     Start time: 24h, 3d, 7d, or ISO date
+  --to <time>       End time: 24h, 3d, 7d, or ISO date
 
 Trending Flags:
   -t <type>         Entity type: persons, organizations, countries, source (default: persons)
@@ -202,6 +205,12 @@ func cmdSearch(flags map[string]string) {
 	if v, ok := flags["source"]; ok {
 		params.Set("sources", v)
 	}
+	if v, ok := flags["from"]; ok {
+		params.Set("from", v)
+	}
+	if v, ok := flags["to"]; ok {
+		params.Set("to", v)
+	}
 
 	raw, err := apiGet("/v1/search", params)
 	if err != nil {
@@ -252,6 +261,9 @@ func cmdSearch(flags map[string]string) {
 		}
 		if len(meta) > 0 {
 			fmt.Printf("    %s%s%s\n", gray, strings.Join(meta, "  ·  "), reset)
+		}
+		if a.URL != "" {
+			fmt.Printf("    %s%s%s\n", dim, a.URL, reset)
 		}
 		fmt.Println()
 	}
@@ -322,7 +334,7 @@ func cmdCounts(flags map[string]string) {
 		params.Set("interval", v)
 	}
 	if v, ok := flags["w"]; ok {
-		params.Set("hours", v)
+		params.Set("hours", windowToHours(v))
 	}
 
 	raw, err := apiGet("/v1/counts", params)
@@ -553,8 +565,6 @@ func main() {
 		return
 	}
 
-	checkVersionNotice()
-
 	cmd := args[0]
 	if cmd == "-h" || cmd == "--help" || cmd == "help" {
 		usage()
@@ -569,6 +579,10 @@ func main() {
 	if flags["help"] == "true" {
 		usage()
 		return
+	}
+
+	if cmd != "update" {
+		checkVersionNotice()
 	}
 
 	switch cmd {
